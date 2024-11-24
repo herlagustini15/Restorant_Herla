@@ -20,7 +20,17 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CartProvider()),
       ],
       child: MaterialApp(
-        theme: ThemeData(primarySwatch: Colors.green),
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+          textTheme: GoogleFonts.montserratTextTheme(),
+          cardTheme: CardTheme(
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+        ),
         home: HomePage(),
       ),
     );
@@ -61,20 +71,34 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          content: SizedBox(
-            height: 280,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          content: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Nama", style: GoogleFonts.montserrat()),
+                Text("Pesanan Anda",
+                    style: GoogleFonts.montserrat(fontSize: 18)),
+                SizedBox(height: 20),
                 TextFormField(
                   controller: namaController,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: "Nama",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 20),
-                Text("Nomor Meja", style: GoogleFonts.montserrat()),
                 TextFormField(
                   controller: nomorMejaController,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: "Nomor Meja",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 20),
                 Consumer<CartProvider>(
@@ -121,6 +145,11 @@ class _HomePageState extends State<HomePage> {
                           );
                         }
                       },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                       child: Text("Pesan Sekarang"),
                     );
                   },
@@ -141,9 +170,13 @@ class _HomePageState extends State<HomePage> {
           return FloatingActionButton(
             onPressed: openDialog,
             child: badges.Badge(
-              badgeContent: Text(
-                cart.totalItems.toString(),
-                style: GoogleFonts.montserrat(color: Colors.white),
+              badgeContent: AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                child: Text(
+                  cart.totalItems.toString(),
+                  key: ValueKey<int>(cart.totalItems),
+                  style: GoogleFonts.montserrat(color: Colors.white),
+                ),
               ),
               child: Icon(Icons.shopping_bag, size: 30),
             ),
@@ -164,104 +197,90 @@ class _HomePageState extends State<HomePage> {
                 itemCount: menus.length,
                 itemBuilder: (context, index) {
                   var menu = menus[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(menu.image),
-                              ),
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              menu.image,
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                menu.nama,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  menu.nama,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                menu.deskripsi,
-                                style: GoogleFonts.montserrat(fontSize: 11),
-                              ),
-                              SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Rp ${menu.harga}",
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                SizedBox(height: 8),
+                                Text(
+                                  menu.deskripsi,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  "Rp ${menu.harga}",
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
                                   ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          Provider.of<CartProvider>(context,
-                                                  listen: false)
-                                              .addRemove(
-                                                  menu.id, menu.nama, false);
-                                        },
-                                        icon: Icon(
-                                          Icons.remove_circle,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      SizedBox(width: 10),
-                                      Consumer<CartProvider>(
-                                        builder: (context, value, _) {
-                                          int id = value.cart.indexWhere(
-                                              (element) =>
-                                                  element.menuId == menu.id);
-                                          return Text(
-                                            (id == -1)
-                                                ? "0"
-                                                : value.cart[id].quantity
-                                                    .toString(),
-                                            style: GoogleFonts.montserrat(
-                                              fontSize: 15,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          Provider.of<CartProvider>(context,
-                                                  listen: false)
-                                              .addRemove(
-                                                  menu.id, menu.nama, true);
-                                        },
-                                        icon: Icon(
-                                          Icons.add_circle,
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon:
+                                    Icon(Icons.add_circle, color: Colors.green),
+                                onPressed: () {
+                                  Provider.of<CartProvider>(context,
+                                          listen: false)
+                                      .addRemove(menu.id, menu.nama, true);
+                                },
+                              ),
+                              SizedBox(height: 4),
+                              Consumer<CartProvider>(
+                                builder: (context, value, _) {
+                                  int id = value.cart.indexWhere(
+                                      (element) => element.menuId == menu.id);
+                                  return Text(
+                                    (id == -1)
+                                        ? "0"
+                                        : value.cart[id].quantity.toString(),
+                                    style: GoogleFonts.montserrat(fontSize: 16),
+                                  );
+                                },
+                              ),
+                              SizedBox(height: 4),
+                              IconButton(
+                                icon: Icon(Icons.remove_circle,
+                                    color: Colors.red),
+                                onPressed: () {
+                                  Provider.of<CartProvider>(context,
+                                          listen: false)
+                                      .addRemove(menu.id, menu.nama, false);
+                                },
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
